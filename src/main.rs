@@ -1,4 +1,5 @@
 extern crate reqwest;
+extern crate regex;
 
 use reqwest::Url;
 use std::env;
@@ -48,12 +49,16 @@ fn main() -> Result<(), reqwest::UrlError> {
    
     // downloading files
     for i in 1..args[2].parse::<i32>().unwrap()+1 {
+		let re = regex::Regex::new(r"\b\d\b").unwrap();
+        let i = &*i.to_string();
+        let f = re.replace_all(i, "0$0");
+
         println!("{}", i);
 
         fs::create_dir_all(format!("{}", args[3])).unwrap();
         let url = base_url.join(&format!("{}/{}{}.png",id, pre, i))?;
         let mut resp = reqwest::get(url).unwrap();
-        let mut out = File::create(format!("{}/{}.png", args[3], i)).expect("failed to create file");
+        let mut out = File::create(format!("{}/{}.png", args[3], f)).expect("failed to create file");
         io::copy(&mut resp, &mut out).expect("failed to copy");
     }
     Ok(())

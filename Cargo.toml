@@ -9,3 +9,4 @@ repository = "https://github.com/dyedquartz/mangadex-scraper"
 
 [dependencies]
 reqwest = "0.9"
+regex = "1.1"
