@@ -18,6 +18,15 @@ fn main() -> Result<(), reqwest::UrlError> {
 
     let base_url = Url::parse("https://s5.mangadex.org/data/")?;
     let prefixes = vec!["", "x", "s"];
+    
+    // testing id directory
+    let url = base_url.join(id)?;
+    let resp = reqwest::get(url).unwrap();
+    match resp.status() {
+        reqwest::StatusCode::FORBIDDEN => println!("Correct ID Path"),
+        reqwest::StatusCode::NOT_FOUND => panic!("Incorrect ID Path"),
+        _ => panic!("Unknown ID Path"),
+    }
 
     let mut pre = String::new();
 
