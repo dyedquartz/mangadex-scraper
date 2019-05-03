@@ -3,6 +3,8 @@ name = "mangadex-scraper"
 version = "0.1.0"
 authors = ["dyedquartz <dyedquartz@gmail.com>"]
 edition = "2018"
+description = "scrapes manga off of mangadex.org"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 reqwest = "0.9"

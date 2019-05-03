@@ -13,12 +13,12 @@ fn main() -> Result<(), reqwest::UrlError> {
 
     let id: &str = &args[1];
 
-    //println!("{:?}", args);
-    //println!("{}", id);
+    println!("{:?}", args);
+    println!("{}", id);
 
     if args.len() != 4 { panic!("mangadex-splice <id> <amount> <output>"); }
 
-    let base_url = Url::parse("https://s5.mangadex.org/data/")?;
+    let base_url = Url::parse("https://s2.mangadex.org/data/")?;
     let prefixes = vec!["", "x", "s"];
     
     // testing id directory
@@ -35,13 +35,13 @@ fn main() -> Result<(), reqwest::UrlError> {
     // grabbing correct file prefix
     for prefix in prefixes {
         let url = base_url.join(&format!("{}/{}1.png",id, prefix))?;
-        // println!("{:?}", url);
+        println!("{:?}", url);
         let resp = reqwest::get(url).unwrap();
         if resp.status() == reqwest::StatusCode::OK {
             pre = String::from(prefix);
             break;
         }
-        // println!("{:?}",resp.status());
+        println!("{:?}",resp.status());
     }
 
     println!("File Prefix: {}", pre);
