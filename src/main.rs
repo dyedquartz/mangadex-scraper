@@ -2,19 +2,21 @@ extern crate reqwest;
 
 use reqwest::Url;
 use std::env;
+use std::fs;
 use std::fs::File;
 use std::io;
 
 
 fn main() -> Result<(), reqwest::UrlError> {
+    // command line arguments
     let args: Vec<String> = env::args().collect();
 
     let id: &str = &args[1];
 
-    println!("{:?}", args);
-    println!("{}", id);
+    //println!("{:?}", args);
+    //println!("{}", id);
 
-    if args.len() != 3 { panic!("mangadex-splice <id> <amount>"); }
+    if args.len() != 4 { panic!("mangadex-splice <id> <amount> <output>"); }
 
     let base_url = Url::parse("https://s5.mangadex.org/data/")?;
     let prefixes = vec!["", "x", "s"];
@@ -29,7 +31,8 @@ fn main() -> Result<(), reqwest::UrlError> {
     }
 
     let mut pre = String::new();
-
+    
+    // grabbing correct file prefix
     for prefix in prefixes {
         let url = base_url.join(&format!("{}/{}1.png",id, prefix))?;
         // println!("{:?}", url);
@@ -42,10 +45,16 @@ fn main() -> Result<(), reqwest::UrlError> {
     }
 
     println!("File Prefix: {}", pre);
-    /*
-    let mut resp = reqwest::get(format!("https://s5.mangadex.org/data/{}/{}.png","re", "re"))?;
-    let mut out = File::create(format!("{}.png", "1")).expect("failed to create file");
-    io::copy(&mut resp, &mut out).expect("failed to copy");
-    */
+   
+    // downloading files
+    for i in 1..args[2].parse::<i32>().unwrap()+1 {
+        println!("{}", i);
+
+        fs::create_dir_all(format!("{}", args[3])).unwrap();
+        let url = base_url.join(&format!("{}/{}{}.png",id, pre, i))?;
+        let mut resp = reqwest::get(url).unwrap();
+        let mut out = File::create(format!("{}/{}.png", args[3], i)).expect("failed to create file");
+        io::copy(&mut resp, &mut out).expect("failed to copy");
+    }
     Ok(())
 }
