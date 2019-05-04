@@ -1,13 +1,13 @@
 extern crate reqwest;
 extern crate regex;
 extern crate clap;
+extern crate zip;
 
 use clap::{Arg, App};
 use reqwest::Url;
-use std::env;
-use std::fs;
 use std::fs::File;
 use std::io;
+use std::io::{Read, Write};
 
 
 fn main() -> Result<(), reqwest::UrlError> {
@@ -23,7 +23,9 @@ fn main() -> Result<(), reqwest::UrlError> {
         .arg(Arg::with_name("compress")
              .short("c")
              .long("compress")
-             .help("Compresses into a .cbz NOT IMPLEMENTED"))
+             .value_name("ARCHIVE_OUTPUT")
+             .help("Compresses into a .cbz")
+             .takes_value(true))
         .get_matches();
 
 
@@ -57,6 +59,7 @@ fn main() -> Result<(), reqwest::UrlError> {
     }
 
     println!("File Prefix: {}", pre);
+
    
     // downloading files
     let mut i = 1;
@@ -65,11 +68,13 @@ fn main() -> Result<(), reqwest::UrlError> {
         let f = &*i.to_string();
         let f = re.replace_all(f, "0$0");
 
-        println!("{}", f);
+        println!("Downloading {}", f);
 
         //fs::create_dir_all(format!("{}", args[3])).unwrap();
         let url = base_url.join(&format!("{}/{}{}.png",id, pre, i))?;
+
         let mut resp = client.get(url).send().unwrap();
+
         if resp.status() == reqwest::StatusCode::OK {
             let mut out = File::create(format!("{}.png", f)).expect("failed to create file");
             io::copy(&mut resp, &mut out).expect("failed to copy");
@@ -78,6 +83,30 @@ fn main() -> Result<(), reqwest::UrlError> {
             break;
         }
         i += 1;
+    }
+
+    if args.is_present("compress") {
+        // create archive + buffer
+        let mut buffer = Vec::new();
+        let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Bzip2);
+        let mut archive = File::create(format!("{}.cbz", args.value_of("compress").unwrap())).unwrap();
+        let mut writer = zip::write::ZipWriter::new(&mut archive);
+        println!("created writer and archive");
+
+        for archive_file in 1..i {
+		    let re = regex::Regex::new(r"\b\d\b").unwrap();
+            let f = &*archive_file.to_string();
+            let f = re.replace_all(f, "0$0");
+            println!("Compressing {}", f);
+            let mut image = File::open(format!("{}.png", f)).unwrap();
+            image.read_to_end(&mut buffer).unwrap();
+
+            writer.start_file(format!("{}.png", f), options).unwrap();
+            writer.write_all(&*buffer).unwrap();
+            buffer.clear();
+            println!("Compressed {}", f);
+        }
+        writer.finish().unwrap();
     }
     Ok(())
 }
