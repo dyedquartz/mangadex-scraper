@@ -1,6 +1,8 @@
 extern crate reqwest;
 extern crate regex;
+extern crate clap;
 
+use clap::{Arg, App};
 use reqwest::Url;
 use std::env;
 use std::fs;
@@ -10,20 +12,25 @@ use std::io;
 
 fn main() -> Result<(), reqwest::UrlError> {
     // command line arguments
-    let args: Vec<String> = env::args().collect();
+    let args = App::new("mangadex-scraper")
+        .version("0.2.0")
+        .author("dyedquartz <dyedquartz@gmail.com>")
+        .about("Scapes manga off of mangadex.org")
+        .arg(Arg::with_name("id")
+             .help("ID of the directory to download")
+             .required(true)
+             .index(1))
+        .arg(Arg::with_name("compress")
+             .short("c")
+             .long("compress")
+             .help("Compresses into a .cbz"))
+        .get_matches();
 
-    let id: &str = &args[1];
-
-    println!("{:?}", args);
-    println!("{}", id);
-
-    if args.len() != 4 { panic!("mangadex-scraper <id> <amount> <output>"); }
 
     let base_url = Url::parse("https://s2.mangadex.org/data/")?;
     let prefixes = vec!["", "x", "s"];
-    let id: &str = &args[1];
-    println!("{:?}", args);
-    println!("{}", id);
+    let id: &str = &args.value_of("id").unwrap();
+    let mut pre = String::new();
 
     let client = reqwest::Client::new();
     
@@ -36,7 +43,6 @@ fn main() -> Result<(), reqwest::UrlError> {
         _ => panic!("Unknown ID Path"),
     }
 
-    let mut pre = String::new();
     
     // grabbing correct file prefix
     for prefix in prefixes {
@@ -53,18 +59,25 @@ fn main() -> Result<(), reqwest::UrlError> {
     println!("File Prefix: {}", pre);
    
     // downloading files
-    for i in 1..args[2].parse::<i32>().unwrap()+1 {
+    let mut i = 1;
+    loop {
 		let re = regex::Regex::new(r"\b\d\b").unwrap();
-        let i = &*i.to_string();
-        let f = re.replace_all(i, "0$0");
+        let f = &*i.to_string();
+        let f = re.replace_all(f, "0$0");
 
-        println!("{}", i);
+        println!("{}", f);
 
-        fs::create_dir_all(format!("{}", args[3])).unwrap();
+        //fs::create_dir_all(format!("{}", args[3])).unwrap();
         let url = base_url.join(&format!("{}/{}{}.png",id, pre, i))?;
         let mut resp = client.get(url).send().unwrap();
-        let mut out = File::create(format!("{}/{}.png", args[3], f)).expect("failed to create file");
-        io::copy(&mut resp, &mut out).expect("failed to copy");
+        if resp.status() == reqwest::StatusCode::OK {
+            let mut out = File::create(format!("{}.png", f)).expect("failed to create file");
+            io::copy(&mut resp, &mut out).expect("failed to copy");
+        } else {
+            println!("{:?} no more files to download", resp.status());
+            break;
+        }
+        i += 1;
     }
     Ok(())
 }
