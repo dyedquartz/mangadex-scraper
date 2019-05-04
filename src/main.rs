@@ -12,7 +12,12 @@ fn main() -> Result<(), reqwest::UrlError> {
     // command line arguments
     let args: Vec<String> = env::args().collect();
 
-    if args.len() != 4 { panic!("mangadex-splice <id> <amount> <output>"); }
+    let id: &str = &args[1];
+
+    println!("{:?}", args);
+    println!("{}", id);
+
+    if args.len() != 4 { panic!("mangadex-scraper <id> <amount> <output>"); }
 
     let base_url = Url::parse("https://s2.mangadex.org/data/")?;
     let prefixes = vec!["", "x", "s"];
