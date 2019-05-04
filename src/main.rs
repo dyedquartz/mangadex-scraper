@@ -23,7 +23,7 @@ fn main() -> Result<(), reqwest::UrlError> {
         .arg(Arg::with_name("compress")
              .short("c")
              .long("compress")
-             .help("Compresses into a .cbz"))
+             .help("Compresses into a .cbz NOT IMPLEMENTED"))
         .get_matches();
 
 
