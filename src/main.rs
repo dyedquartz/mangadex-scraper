@@ -7,7 +7,7 @@ use clap::{Arg, App};
 use reqwest::Url;
 use std::fs::File;
 use std::io;
-use std::io::{Read, Write};
+use std::io::{Read, Write, ErrorKind};
 
 
 fn main() -> Result<(), reqwest::UrlError> {
@@ -90,7 +90,7 @@ fn main() -> Result<(), reqwest::UrlError> {
                 break;
             }
         }
-        println!("Downloaded {:?}", url);
+        println!("Downloaded {}", f);
         i += 1;
     }
 
@@ -106,8 +106,22 @@ fn main() -> Result<(), reqwest::UrlError> {
 		    let re = regex::Regex::new(r"\b\d\b").unwrap();
             let f = &*archive_file.to_string();
             let f = re.replace_all(f, "0$0");
+
             println!("Compressing {}", f);
-            let mut image = File::open(format!("{}.png", f)).unwrap();
+            
+            let image = File::open(format!("{}.png", f));
+            let mut image = match image {
+                Ok(file) => file,
+                Err(error) => match error.kind() {
+                    ErrorKind::NotFound => match File::open(format!("{}.jpg", f)) {
+                        Ok(jpg) => jpg,
+                        Err(e) => panic!("problem opening file for archiving {:?}", e),
+                    },
+                    other_error => panic!("problem opening file for archiving {:?}", other_error),
+                },
+            };
+            
+
             image.read_to_end(&mut buffer).unwrap();
 
             writer.start_file(format!("{}.png", f), options).unwrap();
