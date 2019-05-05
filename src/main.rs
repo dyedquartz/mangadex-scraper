@@ -26,6 +26,9 @@ fn main() -> Result<(), reqwest::UrlError> {
              .value_name("ARCHIVE_OUTPUT")
              .help("Compresses into a .cbz")
              .takes_value(true))
+        .arg(Arg::with_name("remove")
+             .long("remove")
+             .help("Remove file after downloading. Most useful for cleanup after compressing"))
         .get_matches();
 
 
@@ -106,15 +109,17 @@ fn main() -> Result<(), reqwest::UrlError> {
 		    let re = regex::Regex::new(r"\b\d\b").unwrap();
             let f = &*archive_file.to_string();
             let f = re.replace_all(f, "0$0");
-
-            println!("Compressing {}", f);
+            let mut path = format!("{}.png", f);
             
-            let image = File::open(format!("{}.png", f));
+            let image = File::open(&path);
             let mut image = match image {
                 Ok(file) => file,
                 Err(error) => match error.kind() {
                     ErrorKind::NotFound => match File::open(format!("{}.jpg", f)) {
-                        Ok(jpg) => jpg,
+                        Ok(jpg) => {
+                            path = format!("{}.png", f);
+                            jpg
+                        }
                         Err(e) => panic!("problem opening file for archiving {:?}", e),
                     },
                     other_error => panic!("problem opening file for archiving {:?}", other_error),
@@ -127,7 +132,11 @@ fn main() -> Result<(), reqwest::UrlError> {
             writer.start_file(format!("{}.png", f), options).unwrap();
             writer.write_all(&*buffer).unwrap();
             buffer.clear();
-            println!("Compressed {}", f);
+            println!("Compressed {}", path);
+            if args.is_present("remove") {
+                std::fs::remove_file(&path).unwrap();
+                println!("Removed {}", path);
+            }
         }
         writer.finish().unwrap();
     }
