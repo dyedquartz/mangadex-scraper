@@ -6,6 +6,7 @@ edition = "2018"
 description = "scrapes manga off of mangadex.org"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dyedquartz/mangadex-scraper"
+readme = "README.md"
 
 [dependencies]
 reqwest = "0.9"
