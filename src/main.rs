@@ -86,7 +86,7 @@ fn main() -> Result<(), reqwest::UrlError> {
             let mut resp = client.get(url).send().unwrap();
 
             if resp.status() == reqwest::StatusCode::OK {
-                let mut out = File::create(format!("{}.png", f)).expect("failed to create file");
+                let mut out = File::create(format!("{}.jpg", f)).expect("failed to create file");
                 io::copy(&mut resp, &mut out).expect("failed to copy");
             } else {
                 println!("{:?} no more files to download", resp.status());
@@ -117,7 +117,7 @@ fn main() -> Result<(), reqwest::UrlError> {
                 Err(error) => match error.kind() {
                     ErrorKind::NotFound => match File::open(format!("{}.jpg", f)) {
                         Ok(jpg) => {
-                            path = format!("{}.png", f);
+                            path = format!("{}.jpg", f);
                             jpg
                         }
                         Err(e) => panic!("problem opening file for archiving {:?}", e),
@@ -129,7 +129,7 @@ fn main() -> Result<(), reqwest::UrlError> {
 
             image.read_to_end(&mut buffer).unwrap();
 
-            writer.start_file(format!("{}.png", f), options).unwrap();
+            writer.start_file(&*path, options).unwrap();
             writer.write_all(&*buffer).unwrap();
             buffer.clear();
             println!("Compressed {}", path);
