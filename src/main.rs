@@ -13,7 +13,7 @@ use std::io::{Read, Write, ErrorKind};
 fn main() -> Result<(), reqwest::UrlError> {
     // command line arguments
     let args = App::new("mangadex-scraper")
-        .version("0.2.1")
+        .version("0.2.2")
         .author("dyedquartz <dyedquartz@gmail.com>")
         .about("Scapes manga off of mangadex.org")
         .arg(Arg::with_name("id")
@@ -33,7 +33,7 @@ fn main() -> Result<(), reqwest::UrlError> {
 
 
     let base_url = Url::parse("https://s2.mangadex.org/data/")?;
-    let prefixes = vec!["", "x", "s", "K", "V", "v", "z", "q", "r", "k", "D", "a", "G", "m", "T", "R", "n", "w", "U", "S"];
+    let prefixes = vec!["", "x", "s", "K", "V", "v", "z", "q", "r", "k", "D", "a", "G", "m", "T", "R", "n", "w", "U", "S", "M"];
     let id: &str = &args.value_of("id").unwrap();
     let mut pre = String::new();
 
