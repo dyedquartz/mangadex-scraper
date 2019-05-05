@@ -68,7 +68,6 @@ fn main() -> Result<(), reqwest::UrlError> {
         let f = &*i.to_string();
         let f = re.replace_all(f, "0$0");
 
-        println!("Downloading {}", f);
 
         //fs::create_dir_all(format!("{}", args[3])).unwrap();
         let url = base_url.join(&format!("{}/{}{}.png",id, pre, i))?;
@@ -79,9 +78,19 @@ fn main() -> Result<(), reqwest::UrlError> {
             let mut out = File::create(format!("{}.png", f)).expect("failed to create file");
             io::copy(&mut resp, &mut out).expect("failed to copy");
         } else {
-            println!("{:?} no more files to download", resp.status());
-            break;
+            let url = base_url.join(&format!("{}/{}{}.jpg",id, pre, i))?;
+    
+            let mut resp = client.get(url).send().unwrap();
+
+            if resp.status() == reqwest::StatusCode::OK {
+                let mut out = File::create(format!("{}.png", f)).expect("failed to create file");
+                io::copy(&mut resp, &mut out).expect("failed to copy");
+            } else {
+                println!("{:?} no more files to download", resp.status());
+                break;
+            }
         }
+        println!("Downloaded {:?}", url);
         i += 1;
     }
 
