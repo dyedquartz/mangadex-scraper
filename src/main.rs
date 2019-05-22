@@ -3,6 +3,8 @@ extern crate regex;
 extern crate clap;
 extern crate zip;
 
+mod mangadex_api;
+
 use clap::{Arg, App};
 use reqwest::Url;
 use std::fs::File;
@@ -30,7 +32,6 @@ fn main() -> Result<(), reqwest::UrlError> {
              .long("remove")
              .help("Remove file after downloading. Most useful for cleanup after compressing"))
         .get_matches();
-
 
     let base_url = Url::parse("https://s2.mangadex.org/data/")?;
     let prefixes = vec!["", "x", "s", "K", "V", "v", "z", "q", "r", "k", "D", "a", "G", "m", "T", "R", "n", "w", "U", "S", "M"];
