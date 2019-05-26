@@ -1,7 +1,7 @@
 extern crate reqwest;
-extern crate serde;use serde::Deserialize;
+extern crate serde;
+use serde::Deserialize;
 use std::collections::HashMap;
-
 #[derive(Debug, Deserialize)]
 pub struct Manga {
     pub title: String,
@@ -21,10 +21,30 @@ pub struct MangaData {
     pub chapter: HashMap<String, Chapter>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct ChapterData {
+    pub hash: String,
+    pub server: String,
+    //pub page_array: Vec<String>,
+}
+
 pub fn get_manga_data(client: &reqwest::Client, manga: &str) -> MangaData {
     let base_url = reqwest::Url::parse("https://mangadex.org/api/manga/").unwrap();
     let url = base_url.join(manga).unwrap();
 
     let json: MangaData = client.get(url).send().unwrap().json().unwrap();
+    json
+}
+
+pub fn get_chapter_data(client: &reqwest::Client, chapter: &str) -> ChapterData {
+    let base_url = reqwest::Url::parse("https://mangadex.org/api/chapter/").unwrap();
+    let url = base_url.join(chapter).unwrap();
+
+    let json: ChapterData = client
+        .get(url)
+        .send()
+        .expect("something went wrong with sending")
+        .json()
+        .expect("something went wrong with json parsing");
     json
 }
