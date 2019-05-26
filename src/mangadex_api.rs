@@ -1,29 +1,27 @@
-extern crate serde;
 extern crate reqwest;
-
-use serde::Deserialize;
+extern crate serde;use serde::Deserialize;
 use std::collections::HashMap;
 
 #[derive(Debug, Deserialize)]
-struct Manga {
-    title: String,
+pub struct Manga {
+    pub title: String,
 }
 
 #[derive(Debug, Deserialize)]
-struct Chapter {
-    volume: String,
-    chapter: String,
-    lang_code: String,
-    group_name: String,
+pub struct Chapter {
+    pub volume: String,
+    pub chapter: String,
+    pub lang_code: String,
+    pub group_name: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct MangaData {
-    manga: Manga,
-    chapter: HashMap<String, Chapter>,
+    pub manga: Manga,
+    pub chapter: HashMap<String, Chapter>,
 }
 
-pub fn get_manga_data(client: &mut reqwest::Client, manga: &str) -> MangaData {
+pub fn get_manga_data(client: &reqwest::Client, manga: &str) -> MangaData {
     let base_url = reqwest::Url::parse("https://mangadex.org/api/manga/").unwrap();
     let url = base_url.join(manga).unwrap();
 

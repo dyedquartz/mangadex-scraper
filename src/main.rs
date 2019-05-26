@@ -3,7 +3,7 @@ extern crate regex;
 extern crate reqwest;
 mod mangadex_api;
 
-use clap::{App, Arg};
+use clap::{App, Arg, SubCommand};
 use reqwest::Url;
 use std::fs::File;
 use std::io;
@@ -21,6 +21,17 @@ fn main() -> Result<(), reqwest::UrlError> {
                 .required(true)
                 .index(1),
         )
+        .subcommand(
+            SubCommand::with_name("manga").arg(
+                Arg::with_name("lang")
+                    .short("l")
+                    .long("lang")
+                    .value_name("LANGUAGE")
+                    .help("Downloads chapters for specific langages")
+                    .takes_value(true),
+            ),
+        )
+        .subcommand(SubCommand::with_name("chapter"))
         .arg(
             Arg::with_name("compress")
                 .short("c")
@@ -37,19 +48,21 @@ fn main() -> Result<(), reqwest::UrlError> {
         .get_matches();
 
     let base_url = Url::parse("https://s2.mangadex.org/data/")?;
-    
-    let id: &str = &args.value_of("id").unwrap();
     let client = reqwest::Client::new();
-    // testing id directory
-    let url = base_url.join(id)?;
-    let resp = client.get(url).send().unwrap();
-    match resp.status() {
-        reqwest::StatusCode::FORBIDDEN => println!("Correct ID Path"),
-        reqwest::StatusCode::NOT_FOUND => panic!("Incorrect ID Path"),
-        _ => panic!("Unknown ID Path"),
-    }
+    // getting subcommand higynx
+    if let Some(manga) = args.subcommand_matches("manga") {
+        if manga.is_present("lang") {}
+        let manga_data = mangadex_api::get_manga_data(&client, args.value_of("id").unwrap());
+        println!("Scraping '{}'", manga_data.manga.title);
 
-    // downloading files
+        for (name, data) in manga_data.chapter {
+            println!(
+                "{}: volume {} chapter {} in {} from {}",
+                name, data.volume, data.chapter, data.lang_code, data.group_name
+            );
+        }
+    }
+    /*    // downloading files
     let mut i = 1;
     loop {
         let re = regex::Regex::new(r"\b\d\b").unwrap();
@@ -119,5 +132,6 @@ fn main() -> Result<(), reqwest::UrlError> {
         }
         writer.finish().unwrap();
     }
+    */
     Ok(())
 }
