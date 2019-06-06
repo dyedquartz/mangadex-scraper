@@ -25,7 +25,7 @@ pub struct MangaData {
 pub struct ChapterData {
     pub hash: String,
     pub server: String,
-    //pub page_array: Vec<String>,
+    pub page_array: Vec<String>,
 }
 
 pub fn get_manga_data(client: &reqwest::Client, manga: &str) -> MangaData {
@@ -46,5 +46,6 @@ pub fn get_chapter_data(client: &reqwest::Client, chapter: &str) -> ChapterData 
         .expect("something went wrong with sending")
         .json()
         .expect("something went wrong with json parsing");
+    std::thread::sleep(std::time::Duration::from_secs(1));
     json
 }
