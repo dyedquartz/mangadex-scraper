@@ -7,8 +7,7 @@ use clap::{App, Arg, SubCommand};
 use reqwest::Url;
 use std::fs::File;
 use std::io;
-use std::io::{ErrorKind, Read,Seek, Write};
-
+use std::io::{ErrorKind, Read, Seek, Write};
 fn main() -> Result<(), reqwest::UrlError> {
     // command line arguments
     let args = App::new("mangadex-scraper")
@@ -38,8 +37,9 @@ fn main() -> Result<(), reqwest::UrlError> {
                 .long("compress")
                 .value_name("ARCHIVE_OUTPUT")
                 .help("Compresses into a .cbz")
-                .takes_value(true),) .arg(
-            Arg::with_name("remove")
+                .takes_value(true),
+        )
+        .arg(            Arg::with_name("remove")
                 .long("remove")
                 .help("Remove file after downloading. Most useful for cleanup after compressing"),
         )
@@ -60,9 +60,12 @@ fn main() -> Result<(), reqwest::UrlError> {
             let chapter_data = mangadex_api::get_chapter_data(&client, &name);
             println!("{:#?}", chapter_data);
             let mut buffer = Vec::new();
-            let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Bzip2);
-            let mut archive = File::create(format!("{} Vol{} Ch{} - {} {}.cbz", manga_data.manga.title, data.volume, data.chapter, data.lang_code, data.group_name)).unwrap();
-            let mut writer = zip::write::ZipWriter::new(&mut archive);
+            let options = zip::write::FileOptions::default();
+            let mut archive = File::create(format!(
+                "{} Vol{} Ch{} - {} {}.cbz",
+                manga_data.manga.title, data.volume, data.chapter, data.lang_code, data.group_name
+            ))
+            .unwrap();            let mut writer = zip::write::ZipWriter::new(&mut archive);
 
             for page in chapter_data.page_array {
                 let url = reqwest::Url::parse(&*format!(
@@ -74,6 +77,8 @@ fn main() -> Result<(), reqwest::UrlError> {
                 let mut resp = client.get(url).send().unwrap();
                 let mut out = File::create(&page).expect("failed to create image");
                 io::copy(&mut resp, &mut out).expect("failed to copy to image file");
+
+                println!("compressing {}", &page);
 
                 let mut image = File::open(&page).unwrap();
                 image.read_to_end(&mut buffer).unwrap();
@@ -154,4 +159,3 @@ fn main() -> Result<(), reqwest::UrlError> {
     */
     Ok(())
 }
-
