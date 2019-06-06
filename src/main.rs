@@ -63,8 +63,8 @@ fn main() -> Result<(), reqwest::UrlError> {
             let mut buffer = Vec::new();
             let options = zip::write::FileOptions::default();
             let mut archive = File::create(format!(
-                "{} Vol{} Ch{} - {} {}.cbz",
-                manga_data.manga.title, data.volume, data.chapter, data.lang_code, data.group_name
+                "{} Vol. {} Ch. {} - {} ({}).cbz",
+                manga_data.manga.title, data.volume, data.chapter, data.group_name, data.lang_code
             ))
             .unwrap();
 
@@ -98,7 +98,16 @@ fn main() -> Result<(), reqwest::UrlError> {
                 .expect("failed to create image");
                 io::copy(&mut resp, &mut out).expect("failed to copy to image file");
                 println!("compressing {}", &page);
-                let mut image = File::open(&page).unwrap();
+                let mut image = File::open(format!(
+                    "{} Vol. {} Ch. {} - {} ({})/{}",
+                    manga_data.manga.title,
+                    data.volume,
+                    data.chapter,
+                    data.group_name,
+                    data.lang_code,
+                    &page
+                ))
+                .unwrap();
                 image.read_to_end(&mut buffer).unwrap();
                 writer.start_file(&*page, options).unwrap();
                 writer.write_all(&*buffer).unwrap();
