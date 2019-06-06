@@ -70,7 +70,7 @@ fn main() -> Result<(), reqwest::UrlError> {
             let mut writer = zip::write::ZipWriter::new(&mut archive);
             for page in chapter_data.page_array {
                 let url = if chapter_data.server == "/data/" {
-                    reqwest::Url::parse(&*format!("mangadex.org{}/{}", chapter_data.hash, page))
+                    reqwest::Url::parse(&*format!("mangadex.org/data/{}/{}", chapter_data.hash, page))
                         .unwrap()
                 } else {
                     reqwest::Url::parse(&*format!(
