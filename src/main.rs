@@ -4,11 +4,10 @@ extern crate reqwest;
 mod mangadex_api;
 
 use clap::{App, Arg, SubCommand};
-use reqwest::Url;
 use std::fs;
 use std::fs::File;
 use std::io;
-use std::io::{ErrorKind, Read, Seek, Write};
+use std::io::{Read, Write};
 fn main() -> Result<(), reqwest::UrlError> {
     // command line arguments
     let args = App::new("mangadex-scraper")
