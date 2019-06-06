@@ -69,11 +69,16 @@ fn main() -> Result<(), reqwest::UrlError> {
 
             let mut writer = zip::write::ZipWriter::new(&mut archive);
             for page in chapter_data.page_array {
-                let url = reqwest::Url::parse(&*format!(
-                    "{}{}/{}",
-                    chapter_data.server, chapter_data.hash, page
-                ))
-                .unwrap();
+                let url = if chapter_data.server == "/data/" {
+                    reqwest::Url::parse(&*format!("mangadex.org{}/{}", chapter_data.hash, page))
+                        .unwrap()
+                } else {
+                    reqwest::Url::parse(&*format!(
+                        "{}{}/{}",
+                        chapter_data.server, chapter_data.hash, page
+                    ))
+                    .unwrap()
+                };
                 println!("downloading {}", &url);
                 let mut resp = client.get(url).send().unwrap();
                 fs::create_dir_all(format!(
@@ -123,7 +128,7 @@ fn main() -> Result<(), reqwest::UrlError> {
         let re = regex::Regex::new(r"\b\d\b").unwrap();
         let f = &*i.to_string();
         let f = re.replace_all(f, "0$0");
-        //fs::create_dir_all(format!("{}", args[3])).unwrap();
+        //fs::create_dir_all(format!("{}", args[3]])).unwrap();
         let url = base_url.join(&format!("{}/{}{}.png", id, pre, i))?;
         let mut resp = client.get(url).send().unwrap();
         if resp.status() == reqwest::StatusCode::OK {
