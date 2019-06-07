@@ -61,12 +61,18 @@ fn main() -> Result<(), reqwest::UrlError> {
             println!("{:#?}", chapter_data);
             let mut buffer = Vec::new();
             let options = zip::write::FileOptions::default();
-            let mut archive = File::create(format!(
-                "{} Vol. {} Ch. {} - {} ({}).cbz",
-                manga_data.manga.title, data.volume, data.chapter, data.group_name, data.lang_code
+            let mut archive = File::create(strip_characters(
+                &*format!(
+                    "{} Vol. {} Ch. {} - {} ({}).cbz",
+                    manga_data.manga.title,
+                    data.volume,
+                    data.chapter,
+                    data.group_name,
+                    data.lang_code
+                ),
+                "/",
             ))
             .expect("failure to create archive");
-
             let mut writer = zip::write::ZipWriter::new(&mut archive);
             for page in chapter_data.page_array {
                 let url = if chapter_data.server == "/data/" {
@@ -84,37 +90,46 @@ fn main() -> Result<(), reqwest::UrlError> {
                 };
                 println!("downloading {}", &url);
                 let mut resp = client.get(url).send().unwrap();
-                fs::create_dir_all(format!(
-                    "{} Vol. {} Ch. {} - {} ({})",
-                    manga_data.manga.title,
-                    data.volume,
-                    data.chapter,
-                    data.group_name,
-                    data.lang_code
+                fs::create_dir_all(strip_characters(
+                    &*format!(
+                        "{} Vol. {} Ch. {} - {} ({})",
+                        manga_data.manga.title,
+                        data.volume,
+                        data.chapter,
+                        data.group_name,
+                        data.lang_code
+                    ),
+                    "/",
                 ))
                 .unwrap();
-                let mut out = File::create(format!(
-                    "{} Vol. {} Ch. {} - {} ({})/{}",
-                    manga_data.manga.title,
-                    data.volume,
-                    data.chapter,
-                    data.group_name,
-                    data.lang_code,
-                    &page
+                let mut out = File::create(strip_characters(
+                    &*format!(
+                        "{} Vol. {} Ch. {} - {} ({})/{}",
+                        manga_data.manga.title,
+                        data.volume,
+                        data.chapter,
+                        data.group_name,
+                        data.lang_code,
+                        &page
+                    ),
+                    "/",
                 ))
-                .expect("failed to create image");
+                .expect("failure to create image");
                 io::copy(&mut resp, &mut out).expect("failed to copy to image file");
                 println!("compressing {}", &page);
-                let mut image = File::open(format!(
-                    "{} Vol. {} Ch. {} - {} ({})/{}",
-                    manga_data.manga.title,
-                    data.volume,
-                    data.chapter,
-                    data.group_name,
-                    data.lang_code,
-                    &page
+                let mut image = File::open(strip_characters(
+                    &*format!(
+                        "{} Vol. {} Ch. {} - {} ({})/{}",
+                        manga_data.manga.title,
+                        data.volume,
+                        data.chapter,
+                        data.group_name,
+                        data.lang_code,
+                        &page                    ),
+                    "/",
                 ))
                 .unwrap();
+
                 image.read_to_end(&mut buffer).unwrap();
                 writer.start_file(&*page, options).unwrap();
                 writer.write_all(&*buffer).unwrap();
@@ -192,4 +207,11 @@ fn main() -> Result<(), reqwest::UrlError> {
     }
     */
     Ok(())
+}
+
+fn strip_characters(original: &str, to_strip: &str) -> String {
+    original
+        .chars()
+        .filter(|&c| !to_strip.contains(c))
+        .collect()
 }
