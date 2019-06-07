@@ -102,32 +102,35 @@ fn main() -> Result<(), reqwest::UrlError> {
                     "/",
                 ))
                 .unwrap();
-                let mut out = File::create(strip_characters(
-                    &*format!(
-                        "{} Vol. {} Ch. {} - {} ({})/{}",
-                        manga_data.manga.title,
-                        data.volume,
-                        data.chapter,
-                        data.group_name,
-                        data.lang_code,
-                        &page
-                    ),
-                    "/",
-                ))
-                .expect("failure to create image");
+                let mut out = File::create(
+                    std::path::Path::new(&*strip_characters(
+                        &*format!(
+                            "{} Vol. {} Ch. {} - {} ({})",
+                            manga_data.manga.title,
+                            data.volume,
+                            data.chapter,
+                            data.group_name,
+                            data.lang_code,
+                        ),
+                        "/",
+                    ))
+                    .join(&page),
+                ).expect("failure to create image");
+                
+                
                 io::copy(&mut resp, &mut out).expect("failed to copy to image file");
                 println!("compressing {}", &page);
-                let mut image = File::open(strip_characters(
+                let mut image = File::open(std::path::Path::new(&*strip_characters(
                     &*format!(
-                        "{} Vol. {} Ch. {} - {} ({})/{}",
+                        "{} Vol. {} Ch. {} - {} ({})",
                         manga_data.manga.title,
                         data.volume,
                         data.chapter,
                         data.group_name,
                         data.lang_code,
-                        &page                    ),
+                    ),
                     "/",
-                ))
+                )).join(&page))
                 .unwrap();
 
                 image.read_to_end(&mut buffer).unwrap();
