@@ -65,13 +65,16 @@ fn main() -> Result<(), reqwest::UrlError> {
                 "{} Vol. {} Ch. {} - {} ({}).cbz",
                 manga_data.manga.title, data.volume, data.chapter, data.group_name, data.lang_code
             ))
-            .unwrap();
+            .expect("failure to create archive");
 
             let mut writer = zip::write::ZipWriter::new(&mut archive);
             for page in chapter_data.page_array {
                 let url = if chapter_data.server == "/data/" {
-                    reqwest::Url::parse(&*format!("https://mangadex.org/data/{}/{}", chapter_data.hash, page))
-                        .unwrap()
+                    reqwest::Url::parse(&*format!(
+                        "https://mangadex.org/data/{}/{}",
+                        chapter_data.hash, page
+                    ))
+                    .unwrap()
                 } else {
                     reqwest::Url::parse(&*format!(
                         "{}{}/{}",
