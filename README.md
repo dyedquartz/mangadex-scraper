@@ -7,9 +7,9 @@ __NOTE:__ Individual chapter downloading is not available at this time.
 ## Usage
 Download latest version from github or cargo and run `mangadex-scraper <ID> <manga/chapter>` with the manga/chapter ID passed as an arg
 
-Manga ID is https://mangadex.org/title/__22723__/sewayaki-kitsune-no-senko-san
+Manga ID is /title/__22723__/sewayaki-kitsune-no-senko-san
 
-Chapter ID is https://mangadex.org/chapter/__8857__/1
+Chapter ID is /chapter/__8857__/1
 
 use `mangadex-scraper --help` for more info
 
