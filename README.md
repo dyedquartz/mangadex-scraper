@@ -2,12 +2,16 @@
 # mangadex-scraper
 scrapes manga off of mangadex.org
 
+__NOTE:__ Individual chapter downloading is not available at this time.
+
 ## Usage
-Download latest version from github or cargo and run `mangadex-scraper <ID>` with the source directory ID passed as an arg
+Download latest version from github or cargo and run `mangadex-scraper <ID> <manga/chapter>` with the manga/chapter ID passed as an arg
 
-Directory ID is /data/__56e259cc05887be0d35dd4fdf652cb84__/1.png
+Manga ID is https://mangadex.org/title/__22723__/sewayaki-kitsune-no-senko-san
 
-`mangadex-scraper --help` for more info
+Chapter ID is https://mangadex.org/chapter/__8857__/1
+
+use `mangadex-scraper --help` for more info
 
 can also be installed through cargo by running `cargo install mangadex-scraper` 
 
