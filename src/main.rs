@@ -121,7 +121,73 @@ fn main() -> Result<(), reqwest::UrlError> {
                     .join(&page),
                 )
                 .expect("failure to create image");
-                io::copy(&mut resp, &mut out).expect("failed to copy to image file");
+                let copy = io::copy(&mut resp, &mut out);
+                let copy = match copy {
+                    Ok(file) => file,
+                    Err(error) => {
+                        println!("Error Copying to File, trying again: {}", error);
+                        std::fs::remove_file(
+                            std::path::Path::new(&*strip_characters(
+                                &*format!(
+                                    "{} Vol. {} Ch. {} - {} ({})",
+                                    manga_data.manga.title,
+                                    data.volume,
+                                    data.chapter,
+                                    data.group_name,
+                                    data.lang_code,
+                                ),
+                                "/",
+                            ))
+                            .join(&page),
+                        )
+                        .unwrap();
+
+                        let url = if chapter_data.server == "/data/" {
+                            reqwest::Url::parse(&*format!(
+                                "https://mangadex.org/data/{}/{}",
+                                chapter_data.hash, page
+                            ))
+                            .unwrap()
+                        } else {
+                            reqwest::Url::parse(&*format!(
+                                "{}{}/{}",
+                                chapter_data.server, chapter_data.hash, page
+                            ))
+                            .unwrap()
+                        };
+                        println!("downloading {}", &url);
+                        let mut resp = client.get(url).send().unwrap();
+                        fs::create_dir_all(strip_characters(
+                            &*format!(
+                                "{} Vol. {} Ch. {} - {} ({})",
+                                manga_data.manga.title,
+                                data.volume,
+                                data.chapter,
+                                data.group_name,
+                                data.lang_code
+                            ),
+                            "/",
+                        ))
+                        .unwrap();
+                        let mut out = File::create(
+                            std::path::Path::new(&*strip_characters(
+                                &*format!(
+                                    "{} Vol. {} Ch. {} - {} ({})",
+                                    manga_data.manga.title,
+                                    data.volume,
+                                    data.chapter,
+                                    data.group_name,
+                                    data.lang_code,
+                                ),
+                                "/",
+                            ))
+                            .join(&page),
+                        )
+                        .expect("failure to create image");
+                        let copy = io::copy(&mut resp, &mut out);                        0
+                    }
+                };
+
                 println!("compressing {}", &page);
                 let mut image = File::open(
                     std::path::Path::new(&*strip_characters(
