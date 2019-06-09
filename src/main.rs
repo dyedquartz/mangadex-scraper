@@ -16,33 +16,40 @@ fn main() -> Result<(), reqwest::UrlError> {
         .about("Scapes manga off of mangadex.org")
         .arg(
             Arg::with_name("id")
-                .help("ID of the directory to download")
+                .help("ID of the item to download")
                 .required(true)
                 .index(1),
         )
         .subcommand(
-            SubCommand::with_name("manga").arg(
-                Arg::with_name("lang")
-                    .short("l")
-                    .long("lang")
-                    .value_name("LANGUAGE")
-                    .help("Downloads chapters for specific langages")
-                    .takes_value(true),
-            ),
+            SubCommand::with_name("manga")
+                .arg(
+                    Arg::with_name("lang")
+                        .short("l")
+                        .long("language")
+                        .value_name("LANGUAGE")
+                        .help("Downloads chapters for specific langages")
+                        .takes_value(true),
+                )
+                .help("Downloads an entire manga"),
         )
-        .subcommand(SubCommand::with_name("chapter"))
-        .arg(
-            Arg::with_name("compress")
-                .short("c")
-                .long("compress")
-                .value_name("ARCHIVE_OUTPUT")
-                .help("Compresses into a .cbz")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("remove")
-                .long("remove")
-                .help("Remove file after downloading. Most useful for cleanup after compressing"),
+        .subcommand(SubCommand::with_name("chapter").help("Downloads a single chapter"))
+        .subcommand(
+            SubCommand::with_name("volume")
+                .arg(
+                    Arg::with_name("lang")
+                        .short("l")
+                        .long("language")
+                        .value_name("LANGUAGE")
+                        .help("Downloads chapters for specific languages")
+                        .takes_value(true),
+                )
+                .help("Downloads an entire volume")
+                .arg(
+                    Arg::with_name("id")
+                        .help("Volume number to download")
+                        .required(true)
+                        .index(1),
+                ),
         )
         .get_matches();
     let client = reqwest::Client::new();
@@ -184,10 +191,10 @@ fn main() -> Result<(), reqwest::UrlError> {
                             .join(&page),
                         )
                         .expect("failure to create image");
-                        let copy = io::copy(&mut resp, &mut out);                        0
+                        let copy = io::copy(&mut resp, &mut out);
+                        0
                     }
                 };
-
                 println!("compressing {}", &page);
                 let mut image = File::open(
                     std::path::Path::new(&*strip_characters(
@@ -213,73 +220,6 @@ fn main() -> Result<(), reqwest::UrlError> {
             writer.finish().unwrap();
         }
     }
-    /*
-    // downloading files
-    let mut i = 1;
-    loop {
-        let re = regex::Regex::new(r"\b\d\b").unwrap();
-        let f = &*i.to_string();
-        let f = re.replace_all(f, "0$0");
-        //fs::create_dir_all(format!("{}", args[3]])).unwrap();
-        let url = base_url.join(&format!("{}/{}{}.png", id, pre, i))?;
-        let mut resp = client.get(url).send().unwrap();
-        if resp.status() == reqwest::StatusCode::OK {
-            let mut out = File::create(format!("{}.png", f)).expect("failed to create file");
-            io::copy(&mut resp, &mut out).expect("failed to copy");
-        } else {
-            let url = base_url.join(&format!("{}/{}{}.jpg", id, pre, i))?;
-            let mut resp = client.get(url).send().unwrap();
-            if resp.status() == reqwest::StatusCode::OK {
-                let mut out = File::create(format!("{}.jpg", f)).expect("failed to create file");
-                io::copy(&mut resp, &mut out).expect("failed to copy");
-            } else {
-                println!("{:?} no more files to download", resp.status());
-                break;
-            }
-        }
-        println!("Downloaded {}", f);
-        i += 1;
-    }
-    if args.is_present("compress") {
-        // create archive + buffer
-        let mut buffer = Vec::new();
-        let options =
-            zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Bzip2);
-        let mut archive =
-            File::create(format!("{}.cbz", args.value_of("compress").unwrap())).unwrap();
-        let mut writer = zip::write::ZipWriter::new(&mut archive);
-        println!("created writer and archive");
-        for archive_file in 1..i {
-            let re = regex::Regex::new(r"\b\d\b").unwrap();
-            let f = &*archive_file.to_string();
-            let f = re.replace_all(f, "0$0");
-            let mut path = format!("{}.png", f);            let image = File::open(&path);
-            let mut image = match image {
-                Ok(file) => file,
-                Err(error) => match error.kind() {
-                    ErrorKind::NotFound => match File::open(format!("{}.jpg", f)) {
-                        Ok(jpg) => {
-                            path = format!("{}.jpg", f);
-                            jpg
-                        }
-                        Err(e) => panic!("problem opening file for archiving {:?}", e),
-                    },
-                    other_error => panic!("problem opening file for archiving {:?}", other_error),
-                },
-            };
-            image.read_to_end(&mut buffer).unwrap();
-            writer.start_file(&*path, options).unwrap();
-            writer.write_all(&*buffer).unwrap();
-            buffer.clear();
-            println!("Compressed {}", path);
-            if args.is_present("remove") {
-                std::fs::remove_file(&path).unwrap();
-                println!("Removed {}", path);
-            }
-        }
-        writer.finish().unwrap();
-    }
-    */
     Ok(())
 }
 
