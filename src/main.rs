@@ -126,12 +126,15 @@ fn download_chapter(
         ))
         .unwrap();
         let mut out = File::create(
-            std::path::Path::new(&*strip_characters(                &*format!(
-                    "{} Vol. {} Ch. {} - {} ({})",                    manga_data.manga.title,
+            std::path::Path::new(&*strip_characters(
+                &*format!(
+                    "{} Vol. {} Ch. {} - {} ({})",
+                    manga_data.manga.title,
                     data.volume,
                     data.chapter,
                     data.group_name,
-                    data.lang_code,                ),
+                    data.lang_code,
+                ),
                 "/",
             ))
             .join(&page),
@@ -200,7 +203,8 @@ fn download_chapter(
                 )
                 .expect("failure to create image");
                 let copy = io::copy(&mut resp, &mut out);
-                0            }
+                0
+            }
         };
         println!("compressing {}", &page);
         let mut image = File::open(
@@ -224,4 +228,5 @@ fn download_chapter(
         buffer.clear();
         println!("compressed {}", &page);
     }
-    writer.finish().unwrap();}
+    writer.finish().unwrap();
+}
