@@ -1,6 +1,6 @@
 extern crate clap;
-extern crate regex;
 extern crate reqwest;
+extern crate termion;
 mod mangadex_api;
 
 use clap::{App, Arg, SubCommand};
@@ -8,6 +8,7 @@ use std::fs;
 use std::fs::File;
 use std::io;
 use std::io::{Read, Write};
+
 fn main() -> Result<(), reqwest::UrlError> {
     // command line arguments
     let args = App::new("mangadex-scraper")
@@ -72,16 +73,24 @@ fn main() -> Result<(), reqwest::UrlError> {
     if args.is_present("chapter") {
         let chapter_data = mangadex_api::get_chapter_data(&client, args.value_of("id").unwrap());
         let manga_data = mangadex_api::get_manga_data(&client, &chapter_data.manga_id.to_string());
-        let data = manga_data.chapter.get(&chapter_data.id.to_string()).unwrap();
-        println!("Scraping '{} Vol. {} Ch. {} in {} from {}'", manga_data.manga.title, data.volume, data.chapter, data.lang_code, data.group_name);
-
+        let data = manga_data
+            .chapter
+            .get(&chapter_data.id.to_string())
+            .unwrap();
+        println!(
+            "Scraping '{} Vol. {} Ch. {} in {} from {}'",
+            manga_data.manga.title, data.volume, data.chapter, data.lang_code, data.group_name
+        );
         download_chapter(&client, chapter_data.id.to_string(), data, &manga_data);
     }
 
     if let Some(volume) = args.subcommand_matches("volume") {
         let manga_data = mangadex_api::get_manga_data(&client, args.value_of("id").unwrap());
-        println!("Scraping '{} Vol. {}'", manga_data.manga.title, volume.value_of("id").unwrap());
-
+        println!(
+            "Scraping '{} Vol. {}'",
+            manga_data.manga.title,
+            volume.value_of("id").unwrap()
+        );
         for (name, data) in &manga_data.chapter {
             if data.volume != volume.value_of("id").unwrap() {
                 continue;
