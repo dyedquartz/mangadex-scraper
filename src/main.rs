@@ -68,6 +68,13 @@ fn main() -> Result<(), reqwest::UrlError> {
             download_chapter(&client, name.to_string(), data, &manga_data);
         }
     }
+
+    if let Some(chapter) = args.subcommand_matches("chapter") {
+        let chapter_data = mangadex_api::get_chapter_data(&client, args.value_of("id").unwrap());
+        let manga_data = mangadex_api::get_manga_data(&client, &chapter_data.manga_id.to_string());
+
+        download_chapter(&client, chapter_data.id.to_string(), manga_data.chapter.get(&chapter_data.id.to_string()).unwrap(), &manga_data);
+    }
     Ok(())
 }
 

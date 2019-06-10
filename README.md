@@ -2,8 +2,6 @@
 # mangadex-scraper
 scrapes manga off of mangadex.org
 
-__NOTE:__ Individual chapter downloading is not available at this time.
-
 ## Usage
 Download latest version from github or cargo and run `mangadex-scraper <ID> <manga/chapter>` with the manga/chapter ID passed as an arg
 
