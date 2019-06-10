@@ -11,7 +11,7 @@ use std::io::{Read, Write};
 fn main() -> Result<(), reqwest::UrlError> {
     // command line arguments
     let args = App::new("mangadex-scraper")
-        .version("0.3.0")
+        .version("0.3.1")
         .author("dyedquartz <dyedquartz@gmail.com>")
         .about("Scapes manga off of mangadex.org")
         .arg(
