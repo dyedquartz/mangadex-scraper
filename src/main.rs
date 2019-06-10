@@ -196,6 +196,7 @@ fn download_chapter(
 
     let chapter_data = mangadex_api::get_chapter_data(&client, &name);
     //println!("{:#?}", chapter_data);
+    let page_count = chapter_data.page_array.len();
 
     let mut buffer = Vec::new();
     let options = zip::write::FileOptions::default();
