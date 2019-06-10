@@ -30,9 +30,9 @@ fn main() -> Result<(), reqwest::UrlError> {
                         .help("Downloads chapters for specific langages")
                         .takes_value(true),
                 )
-                .help("Downloads an entire manga"),
+                .about("Downloads an entire manga"),
         )
-        .subcommand(SubCommand::with_name("chapter").help("Downloads a single chapter"))
+        .subcommand(SubCommand::with_name("chapter").about("Downloads a single chapter"))
         .subcommand(
             SubCommand::with_name("volume")
                 .arg(
@@ -43,7 +43,7 @@ fn main() -> Result<(), reqwest::UrlError> {
                         .help("Downloads chapters for specific languages")
                         .takes_value(true),
                 )
-                .help("Downloads an entire volume")
+                .about("Downloads an entire volume")
                 .arg(
                     Arg::with_name("id")
                         .help("Volume number to download")
@@ -69,11 +69,31 @@ fn main() -> Result<(), reqwest::UrlError> {
         }
     }
 
-    if let Some(chapter) = args.subcommand_matches("chapter") {
+    if args.is_present("chapter") {
         let chapter_data = mangadex_api::get_chapter_data(&client, args.value_of("id").unwrap());
         let manga_data = mangadex_api::get_manga_data(&client, &chapter_data.manga_id.to_string());
+        let data = manga_data.chapter.get(&chapter_data.id.to_string()).unwrap();
+        println!("Scraping '{} Vol. {} Ch. {} in {} from {}'", manga_data.manga.title, data.volume, data.chapter, data.lang_code, data.group_name);
 
-        download_chapter(&client, chapter_data.id.to_string(), manga_data.chapter.get(&chapter_data.id.to_string()).unwrap(), &manga_data);
+        download_chapter(&client, chapter_data.id.to_string(), data, &manga_data);
+    }
+
+    if let Some(volume) = args.subcommand_matches("volume") {
+        let manga_data = mangadex_api::get_manga_data(&client, args.value_of("id").unwrap());
+        println!("Scraping '{} Vol. {}'", manga_data.manga.title, volume.value_of("id").unwrap());
+
+        for (name, data) in &manga_data.chapter {
+            if data.volume != volume.value_of("id").unwrap() {
+                continue;
+            }
+            if volume.is_present("lang") {
+                if data.lang_code != volume.value_of("lang").unwrap() {
+                    continue;
+                }
+            }
+
+            download_chapter(&client, name.to_string(), &data, &manga_data);
+        }
     }
     Ok(())
 }
@@ -147,8 +167,8 @@ fn download_chapter(
             .join(&page),
         )
         .expect("failure to create image");
-        let copy = io::copy(&mut resp, &mut out);
-        let copy = match copy {
+        let _copy = io::copy(&mut resp, &mut out);
+        let _copy = match _copy {
             Ok(file) => file,
             Err(error) => {
                 println!("Error Copying to File, trying again: {}", error);
@@ -209,7 +229,7 @@ fn download_chapter(
                     .join(&page),
                 )
                 .expect("failure to create image");
-                let copy = io::copy(&mut resp, &mut out);
+                io::copy(&mut resp, &mut out).expect("failure to copy to image a second time");
                 0
             }
         };
