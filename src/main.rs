@@ -7,12 +7,14 @@ use clap::{App, Arg, SubCommand};
 use std::fs;
 use std::fs::File;
 use std::io;
-use std::io::{Read, Write};
+use std::io::{stdout, Read, Write};
+use termion::async_stdin;
+use termion::raw::IntoRawMode;
 
 fn main() -> Result<(), reqwest::UrlError> {
     // command line arguments
     let args = App::new("mangadex-scraper")
-        .version("0.3.1")
+        .version("0.4.0")
         .author("dyedquartz <dyedquartz@gmail.com>")
         .about("Scapes manga off of mangadex.org")
         .arg(
@@ -53,20 +55,79 @@ fn main() -> Result<(), reqwest::UrlError> {
                 ),
         )
         .get_matches();
+
+    let stdout = stdout();
+    let mut stdout = stdout.lock().into_raw_mode().unwrap();
+    let mut stdin = async_stdin().bytes();
+
+    write!(
+        stdout,
+        "{}{}",
+        termion::clear::All,
+        termion::cursor::Goto(1, 1)
+    )
+    .unwrap();
+
     let client = reqwest::Client::new();
 
     // getting subcommand higynx
     if let Some(manga) = args.subcommand_matches("manga") {
         let manga_data = mangadex_api::get_manga_data(&client, args.value_of("id").unwrap());
-        println!("Scraping '{}'", manga_data.manga.title);
+        write!(
+            stdout,
+            "Scraping '{}' with {} total chapters",
+            manga_data.manga.title,
+            manga_data.chapter.len()
+        )
+        .unwrap();
+        let mut chapter_count = 0;
+        let mut percentage = 0.0;
 
+        stdout.flush().unwrap();
         for (name, data) in &manga_data.chapter {
             if manga.is_present("lang") {
                 if data.lang_code != manga.value_of("lang").unwrap() {
+                    chapter_count += 1;
                     continue;
                 }
             }
-            download_chapter(&client, name.to_string(), data, &manga_data);
+            download_chapter(&client, &mut stdout, name.to_string(), data, &manga_data);
+            chapter_count += 1;
+
+            percentage = chapter_count as f32 / manga_data.chapter.len() as f32;
+
+            write!(
+                stdout,
+                "{}{}Chapter Count: {} / {}",
+                termion::cursor::Goto(1, termion::terminal_size().unwrap().1 - 1),
+                termion::clear::CurrentLine,
+                chapter_count.to_string(),
+                manga_data.chapter.len().to_string()
+            )
+            .unwrap();
+            write!(
+                stdout,
+                "{}{}Manga Progress: {:.0}% -[",
+                termion::cursor::Goto(1, termion::terminal_size().unwrap().1),
+                termion::clear::CurrentLine,
+                percentage * 100.0,
+            )
+            .unwrap();
+
+            for _ in 0..(percentage * (termion::terminal_size().unwrap().0 as f32 - 24.0)) as u32 {
+                write!(stdout, "=").unwrap();
+            }
+
+            write!(
+                stdout,
+                "{}]-",
+                termion::cursor::Goto(
+                    termion::terminal_size().unwrap().0 - 1,
+                    termion::terminal_size().unwrap().1
+                )
+            )
+            .unwrap();
+            stdout.flush().unwrap();
         }
     }
 
@@ -81,9 +142,14 @@ fn main() -> Result<(), reqwest::UrlError> {
             "Scraping '{} Vol. {} Ch. {} in {} from {}'",
             manga_data.manga.title, data.volume, data.chapter, data.lang_code, data.group_name
         );
-        download_chapter(&client, chapter_data.id.to_string(), data, &manga_data);
+        download_chapter(
+            &client,
+            &mut stdout,
+            chapter_data.id.to_string(),
+            data,
+            &manga_data,
+        );
     }
-
     if let Some(volume) = args.subcommand_matches("volume") {
         let manga_data = mangadex_api::get_manga_data(&client, args.value_of("id").unwrap());
         println!(
@@ -101,7 +167,7 @@ fn main() -> Result<(), reqwest::UrlError> {
                 }
             }
 
-            download_chapter(&client, name.to_string(), &data, &manga_data);
+            download_chapter(&client, &mut stdout, name.to_string(), &data, &manga_data);
         }
     }
     Ok(())
@@ -116,16 +182,21 @@ fn strip_characters(original: &str, to_strip: &str) -> String {
 
 fn download_chapter(
     client: &reqwest::Client,
+    stdout: &mut termion::raw::RawTerminal<std::io::StdoutLock<'_>>,
     name: String,
     data: &mangadex_api::Chapter,
     manga_data: &mangadex_api::MangaData,
 ) {
+    /*
     println!(
         "{}: volume {} chapter {} in {} from {}",
         name, data.volume, data.chapter, data.lang_code, data.group_name
     );
+    */
+
     let chapter_data = mangadex_api::get_chapter_data(&client, &name);
-    println!("{:#?}", chapter_data);
+    //println!("{:#?}", chapter_data);
+
     let mut buffer = Vec::new();
     let options = zip::write::FileOptions::default();
     let mut archive = File::create(strip_characters(
@@ -137,6 +208,7 @@ fn download_chapter(
     ))
     .expect("failure to create archive");
     let mut writer = zip::write::ZipWriter::new(&mut archive);
+
     for page in chapter_data.page_array {
         let url = if chapter_data.server == "/data/" {
             reqwest::Url::parse(&*format!(
@@ -151,7 +223,7 @@ fn download_chapter(
             ))
             .unwrap()
         };
-        println!("downloading {}", &url);
+        //println!("downloading {}", &url);
         let mut resp = client.get(url).send().unwrap();
         fs::create_dir_all(strip_characters(
             &*format!(
@@ -209,7 +281,7 @@ fn download_chapter(
                     ))
                     .unwrap()
                 };
-                println!("downloading {}", &url);
+                //println!("downloading {}", &url);
                 let mut resp = client.get(url).send().unwrap();
                 fs::create_dir_all(strip_characters(
                     &*format!(
