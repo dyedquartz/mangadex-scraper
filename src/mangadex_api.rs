@@ -23,7 +23,9 @@ pub struct MangaData {
 
 #[derive(Debug, Deserialize)]
 pub struct ChapterData {
+    pub id: u32,
     pub hash: String,
+    pub manga_id: u32,
     pub server: String,
     pub page_array: Vec<String>,
 }
