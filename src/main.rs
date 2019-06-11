@@ -91,9 +91,6 @@ fn main() -> Result<(), reqwest::UrlError> {
                     continue;
                 }
             }
-            download_chapter(&client, &mut stdout, name.to_string(), data, &manga_data);
-            chapter_count += 1;
-
             percentage = chapter_count as f32 / manga_data.chapter.len() as f32;
 
             write!(
@@ -107,14 +104,14 @@ fn main() -> Result<(), reqwest::UrlError> {
             .unwrap();
             write!(
                 stdout,
-                "{}{}Manga Progress: {:.0}% -[",
+                "{}{}Manga Progress: {:.0}%       -[",
                 termion::cursor::Goto(1, termion::terminal_size().unwrap().1),
                 termion::clear::CurrentLine,
                 percentage * 100.0,
             )
             .unwrap();
 
-            for _ in 0..(percentage * (termion::terminal_size().unwrap().0 as f32 - 24.0)) as u32 {
+            for _ in 0..(percentage * (termion::terminal_size().unwrap().0 as f32 - 30.0)) as u32 {
                 write!(stdout, "=").unwrap();
             }
 
@@ -128,6 +125,9 @@ fn main() -> Result<(), reqwest::UrlError> {
             )
             .unwrap();
             stdout.flush().unwrap();
+
+            download_chapter(&client, &mut stdout, name.to_string(), data, &manga_data);
+            chapter_count += 1;
         }
     }
 
@@ -196,7 +196,9 @@ fn download_chapter(
 
     let chapter_data = mangadex_api::get_chapter_data(&client, &name);
     //println!("{:#?}", chapter_data);
-    let page_count = chapter_data.page_array.len();
+    let mut page_count = 0;
+    let mut percentage = 0.0;
+    let page_length = &chapter_data.page_array.len();
 
     let mut buffer = Vec::new();
     let options = zip::write::FileOptions::default();
@@ -211,6 +213,47 @@ fn download_chapter(
     let mut writer = zip::write::ZipWriter::new(&mut archive);
 
     for page in chapter_data.page_array {
+        percentage = page_count as f32 / *page_length as f32;
+        write!(
+            stdout,
+            "{}{}Downloading {} Volume {} Chapter {} in {} from {}", 
+            termion::cursor::Goto(1, termion::terminal_size().unwrap().1 - 4),
+            termion::clear::CurrentLine,
+            manga_data.manga.title,
+            data.volume, data.chapter, data.lang_code, data.group_name
+        ).unwrap();
+
+        write!(
+            stdout,
+            "{}{}Page Count: {} / {}",
+            termion::cursor::Goto(1, termion::terminal_size().unwrap().1 - 3),
+            termion::clear::CurrentLine,
+            page_count,
+            page_length
+            ).unwrap();
+
+        write!(
+            stdout,
+            "{}{}Chapter Progress: {:.0}%     -[",
+            termion::cursor::Goto(1, termion::terminal_size().unwrap().1 - 2),
+            termion::clear::CurrentLine,
+            percentage * 100.0
+          ).unwrap();
+
+        for _ in 0..(percentage * (termion::terminal_size().unwrap().0 as f32 - 30.0)) as u32 {
+            write!(stdout, "=").unwrap();
+        }
+
+        write!(
+            stdout,
+            "{}]-",
+            termion::cursor::Goto(
+                termion::terminal_size().unwrap().0 - 1,
+                termion::terminal_size().unwrap().1 - 2
+            )
+        ).unwrap();
+        stdout.flush().unwrap();
+
         let url = if chapter_data.server == "/data/" {
             reqwest::Url::parse(&*format!(
                 "https://mangadex.org/data/{}/{}",
@@ -315,7 +358,7 @@ fn download_chapter(
                 0
             }
         };
-        println!("compressing {}", &page);
+        //println!("compressing {}", &page);
         let mut image = File::open(
             std::path::Path::new(&*strip_characters(
                 &*format!(
@@ -335,7 +378,8 @@ fn download_chapter(
         writer.start_file(&*page, options).unwrap();
         writer.write_all(&*buffer).unwrap();
         buffer.clear();
-        println!("compressed {}", &page);
+        page_count += 1;
+        //println!("compressed {}", &page);
     }
     writer.finish().unwrap();
 }
