@@ -8,7 +8,7 @@ use std::fs;
 use std::fs::File;
 use std::io;
 use std::io::{stdout, Read, Write};
-use termion::async_stdin;
+//use termion::async_stdin;
 use termion::raw::IntoRawMode;
 
 fn main() -> Result<(), reqwest::UrlError> {
@@ -58,7 +58,7 @@ fn main() -> Result<(), reqwest::UrlError> {
 
     let stdout = stdout();
     let mut stdout = stdout.lock().into_raw_mode().unwrap();
-    let mut stdin = async_stdin().bytes();
+    //let stdin = async_stdin().bytes();
 
     write!(
         stdout,
@@ -216,7 +216,7 @@ fn download_chapter(
         percentage = page_count as f32 / *page_length as f32;
         write!(
             stdout,
-            "{}{}Downloading {} Volume {} Chapter {} in {} from {}", 
+            "{}{}Downloading {} Volume {} Chapter {} in {} from {}",
             termion::cursor::Goto(1, termion::terminal_size().unwrap().1 - 4),
             termion::clear::CurrentLine,
             manga_data.manga.title,
