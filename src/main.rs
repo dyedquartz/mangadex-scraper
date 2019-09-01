@@ -41,6 +41,11 @@ fn main() -> Result<(), reqwest::UrlError> {
              .value_name("VOLUME")
              .help("Downloads an enture volume")
         )
+        .arg(Arg::with_name("archive")
+             .short("a")
+             .long("archive")
+             .help("archives into a zip")
+         )
         .get_matches();
 
     if args.is_present("chapter") && args.is_present("volume") {
@@ -174,8 +179,8 @@ fn download_chapter(
     stdout: &mut termion::raw::RawTerminal<std::io::StdoutLock<'_>>,
     name: String,
     data: &mangadex_api::Chapter,
-    manga_data: &mangadex_api::MangaData,
-) {
+    manga_data: &mangadex_api::MangaData)
+{
     /*
     println!(
         "{}: volume {} chapter {} in {} from {}",
@@ -249,7 +254,7 @@ fn download_chapter(
         fs::create_dir_all(strip_characters(
             &*format!(
                 "{} Vol. {} Ch. {} - {} ({})",
-                manga_data.manga.title, data.volume, data.chapter, data.group_name, data.lang_code
+                manga_data.manga.title, format!("{:0>4}", data.volume), format!("{:0>4}", data.chapter), data.group_name, data.lang_code
             ),
             "/",
         ))
@@ -259,8 +264,8 @@ fn download_chapter(
                 &*format!(
                     "{} Vol. {} Ch. {} - {} ({})",
                     manga_data.manga.title,
-                    data.volume,
-                    data.chapter,
+                    format!("{:0>4}", data.volume),
+                    format!("{:0>4}", data.chapter),
                     data.group_name,
                     data.lang_code,
                 ),
@@ -279,8 +284,8 @@ fn download_chapter(
                         &*format!(
                             "{} Vol. {} Ch. {} - {} ({})",
                             manga_data.manga.title,
-                            data.volume,
-                            data.chapter,
+                            format!("{:0>4}", data.volume),
+                            format!("{:0>4}", data.chapter),
                             data.group_name,
                             data.lang_code,
                         ),
@@ -308,8 +313,8 @@ fn download_chapter(
                     &*format!(
                         "{} Vol. {} Ch. {} - {} ({})",
                         manga_data.manga.title,
-                        data.volume,
-                        data.chapter,
+                        format!("{:0>4}", data.volume),
+                        format!("{:0>4}", data.chapter),
                         data.group_name,
                         data.lang_code
                     ),
@@ -321,8 +326,8 @@ fn download_chapter(
                         &*format!(
                             "{} Vol. {} Ch. {} - {} ({})",
                             manga_data.manga.title,
-                            data.volume,
-                            data.chapter,
+                            format!("{:0>4}", data.volume),
+                            format!("{:0>4}", data.chapter),
                             data.group_name,
                             data.lang_code,
                         ),

@@ -12,5 +12,4 @@ readme = "README.md"
 clap = "2"
 reqwest = "0"
 serde = { version = "1", features = ["derive"] }
-zip = "0"
 termion = "1"
