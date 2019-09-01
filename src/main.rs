@@ -6,7 +6,7 @@ mod mangadex_api;
 use clap::{App, Arg};
 use std::fs;
 use std::fs::File;
-use std::io;
+use std::{io, thread, time};
 use std::io::{stdout, Write};
 //use termion::async_stdin;
 use termion::raw::IntoRawMode;
@@ -189,12 +189,12 @@ fn download_chapter(
     */
 
     let chapter_data = mangadex_api::get_chapter_data(&client, &name);
-    //println!("{:#?}", chapter_data);
     let mut page_count = 0;
     let mut percentage;
     let page_length = &chapter_data.page_array.len();
 
     for page in chapter_data.page_array {
+        let current_time = time::Instant::now();
         let page_name = format!("{:0>8}", page.trim_start_matches(char::is_alphabetic));
 
         percentage = page_count as f32 / *page_length as f32;
@@ -343,5 +343,8 @@ fn download_chapter(
             }
         };
         page_count += 1;
+        while time::Instant::now().duration_since(current_time).as_millis() <= 1000 {
+            thread::sleep(time::Duration::from_millis(100));
+        }
     }
 }
