@@ -1,6 +1,6 @@
 [package]
 name = "mangadex-scraper"
-version = "0.3.1"
+version = "0.5.0"
 authors = ["dyedquartz <dyedquartz@gmail.com>"]
 edition = "2018"
 description = "scrapes manga off of mangadex.org"
@@ -11,6 +11,6 @@ readme = "README.md"
 [dependencies]
 clap = "2"
 reqwest = "0"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
 zip = "0"
 termion = "1"
