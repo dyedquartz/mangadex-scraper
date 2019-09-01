@@ -195,6 +195,8 @@ fn download_chapter(
     let page_length = &chapter_data.page_array.len();
 
     for page in chapter_data.page_array {
+        let page_name = format!("{:0>8}", page.trim_start_matches(char::is_alphabetic));
+
         percentage = page_count as f32 / *page_length as f32;
         write!(
             stdout,
@@ -271,7 +273,7 @@ fn download_chapter(
                 ),
                 "/",
             ))
-            .join(&page),
+            .join(&page_name),
         )
         .expect("failure to create image");
         let _copy = io::copy(&mut resp, &mut out);
@@ -291,7 +293,7 @@ fn download_chapter(
                         ),
                         "/",
                     ))
-                    .join(&page),
+                    .join(&page_name),
                 )
                 .unwrap();
                 let url = if chapter_data.server == "/data/" {
@@ -333,7 +335,7 @@ fn download_chapter(
                         ),
                         "/",
                     ))
-                    .join(&page),
+                    .join(&page_name),
                 )
                 .expect("failure to create image");
                 io::copy(&mut resp, &mut out).expect("failure to copy to image a second time");
