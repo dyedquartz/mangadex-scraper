@@ -89,6 +89,15 @@ fn main() -> Result<(), reqwest::UrlError> {
     } else {
         let manga_data = mangadex_api::get_manga_data(&client, args.value_of("id").unwrap());
         //let mut chapter_count = 0;
+        println!(
+            "Scraping '{}' in {}",
+            manga_data.manga.title,
+            if !args.is_present("lang") {
+                "All"
+            } else {
+                args.value_of("lang").unwrap()
+            }
+        );
 
         for (name, data) in &manga_data.chapter {
             if args.is_present("lang") {
@@ -243,4 +252,9 @@ fn download_chapter(
             thread::sleep(time::Duration::from_millis(100));
         }
     }
+
+    println!(
+        "Downloaded '{} Vol. {} Ch. {} in {} from {}'",
+        manga_data.manga.title, data.volume, data.chapter, data.lang_code, data.group_name
+    );
 }
