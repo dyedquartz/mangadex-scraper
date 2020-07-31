@@ -32,7 +32,7 @@ pub struct ChapterData {
     pub page_array: Vec<String>,
 }
 
-pub fn get_manga_data(client: &reqwest::Client, manga: &str) -> MangaData {
+pub fn get_manga_data(client: &reqwest::blocking::Client, manga: &str) -> MangaData {
     let base_url = reqwest::Url::parse("https://mangadex.org/api/manga/").unwrap();
     let url = base_url.join(manga).unwrap();
 
@@ -40,7 +40,7 @@ pub fn get_manga_data(client: &reqwest::Client, manga: &str) -> MangaData {
     json
 }
 
-pub fn get_chapter_data(client: &reqwest::Client, chapter: &str) -> ChapterData {
+pub fn get_chapter_data(client: &reqwest::blocking::Client, chapter: &str) -> ChapterData {
     let base_url = reqwest::Url::parse("https://mangadex.org/api/chapter/").unwrap();
     let url = base_url.join(chapter).unwrap();
 
