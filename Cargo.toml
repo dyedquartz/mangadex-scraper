@@ -9,6 +9,6 @@ repository = "https://github.com/dyedquartz/mangadex-scraper"
 readme = "README.md"
 
 [dependencies]
-clap = "2"
-reqwest = "0"
-serde = { version = "1", features = ["derive"] }
+clap = "2.33"
+reqwest = { version = "0.10", features = ["blocking", "json"] }
+serde = { version = "1.0", features = ["derive"] }

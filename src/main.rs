@@ -7,7 +7,7 @@ use std::fs;
 use std::fs::File;
 use std::{io, thread, time};
 
-fn main() -> Result<(), reqwest::UrlError> {
+fn main() -> Result<(), reqwest::Error> {
     // command line arguments
     let args = App::new("mangadex-scraper")
         .version("0.5.1")
@@ -39,7 +39,7 @@ fn main() -> Result<(), reqwest::UrlError> {
                 .long("volume")
                 .takes_value(true)
                 .value_name("VOLUME")
-                .help("Downloads an enture volume"),
+                .help("Downloads an entire volume"),
         )
         /*
         .arg(
@@ -56,7 +56,7 @@ fn main() -> Result<(), reqwest::UrlError> {
         std::process::exit(1);
     }
 
-    let client = reqwest::Client::new();
+    let client = reqwest::blocking::Client::new();
 
     if args.is_present("chapter") {
         let chapter_data = mangadex_api::get_chapter_data(&client, args.value_of("id").unwrap());
@@ -122,7 +122,7 @@ fn strip_characters(original: &str, to_strip: &str) -> String {
 }
 
 fn download_chapter(
-    client: &reqwest::Client,
+    client: &reqwest::blocking::Client,
     name: String,
     data: &mangadex_api::Chapter,
     manga_data: &mangadex_api::MangaData,
