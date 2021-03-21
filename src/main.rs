@@ -121,6 +121,11 @@ fn strip_characters(original: &str, to_strip: &str) -> String {
         .collect()
 }
 
+fn clean_title(original: &str) -> String {
+    original.replace(":", "-")
+}
+
+
 fn download_chapter(
     client: &reqwest::blocking::Client,
     name: String,
@@ -153,7 +158,7 @@ fn download_chapter(
         fs::create_dir_all(strip_characters(
             &*format!(
                 "{} Vol. {} Ch. {} - {} ({})",
-                manga_data.manga.title,
+                clean_title(&*manga_data.manga.title),
                 format!("{:0>4}", data.volume),
                 format!("{:0>4}", data.chapter),
                 data.group_name,
@@ -166,7 +171,7 @@ fn download_chapter(
             std::path::Path::new(&*strip_characters(
                 &*format!(
                     "{} Vol. {} Ch. {} - {} ({})",
-                    manga_data.manga.title,
+                    clean_title(&*manga_data.manga.title),
                     format!("{:0>4}", data.volume),
                     format!("{:0>4}", data.chapter),
                     data.group_name,
@@ -186,7 +191,7 @@ fn download_chapter(
                     std::path::Path::new(&*strip_characters(
                         &*format!(
                             "{} Vol. {} Ch. {} - {} ({})",
-                            manga_data.manga.title,
+                            clean_title(&*manga_data.manga.title),
                             format!("{:0>4}", data.volume),
                             format!("{:0>4}", data.chapter),
                             data.group_name,
@@ -215,7 +220,7 @@ fn download_chapter(
                 fs::create_dir_all(strip_characters(
                     &*format!(
                         "{} Vol. {} Ch. {} - {} ({})",
-                        manga_data.manga.title,
+                        clean_title(&*manga_data.manga.title),
                         format!("{:0>4}", data.volume),
                         format!("{:0>4}", data.chapter),
                         data.group_name,
@@ -228,7 +233,7 @@ fn download_chapter(
                     std::path::Path::new(&*strip_characters(
                         &*format!(
                             "{} Vol. {} Ch. {} - {} ({})",
-                            manga_data.manga.title,
+                            clean_title(&*manga_data.manga.title),
                             format!("{:0>4}", data.volume),
                             format!("{:0>4}", data.chapter),
                             data.group_name,
