@@ -1,3 +1,5 @@
+# WARNING: not operable in current state! update coming soon
+
 [![Crates.io](https://img.shields.io/crates/v/mangadex-scraper.svg)](https://crates.io/crates/mangadex-scraper/) ![Crates.io](https://img.shields.io/crates/l/mangadex-scraper.svg)
 # mangadex-scraper
 scrapes manga off of mangadex.org
